@@ -23,6 +23,7 @@ jobs:
           sed -i "s|__DECKY_MIRROR_HOST__|$MIRROR_HOST|g" user_install_script.sh
           sed -i "s|__DECKY_PLUGIN_MIRROR_HOST__|${PLUGIN_MIRROR_HOST}|g" user_install_script.sh
           sed -i "s|__DECKY_PLUGIN_ID__|${PLUGIN_ID}|g" user_install_script.sh
+          sed -i "s|__DECKY_MIRROR_HOST__|$MIRROR_HOST|g" decky_installer.desktop
 
       - name: Create GitHub release
         uses: softprops/action-gh-release@v2
