@@ -14,6 +14,9 @@ REPLY = 1
 ERROR = -1
 EVENT = 3
 
+# Default store URL
+DEFAULT_STORE_URL = "https://plugins.deckbrew.xyz/plugins"
+
 
 def log(*args: Any) -> None:
     """Print formatted logs to stderr."""
@@ -269,7 +272,7 @@ async def get_store_url() -> str:
         await client.connect(token)
 
         log("Getting configured store URL...")
-        await client.send(CALL, "utilities/settings/get", ["store_url", "https://plugins.deckbrew.xyz/plugins"])
+        await client.send(CALL, "utilities/settings/get", ["store_url", DEFAULT_STORE_URL])
         
         # Wait for reply
         msg = await client.recv()
@@ -314,6 +317,8 @@ if __name__ == "__main__":
         # Get configured store URL
         asyncio.run(get_store_url())
     else:
-        # Run installer
-        asyncio.run(run_installer(**{k: v for k, v in vars(args).items() 
-                                      if k in ['target_id', 'store_url']}))
+        # Run installer - only pass expected parameters
+        asyncio.run(run_installer(
+            target_id=args.target_id,
+            store_url=args.store_url
+        ))
