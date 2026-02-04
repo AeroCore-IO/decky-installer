@@ -51,21 +51,10 @@ if ! curl -fsSL "https://${DECKY_MIRROR_HOST}/AeroCore-IO/decky-installer/releas
 fi
 
 # Verify the checksum
-if command -v sha256sum >/dev/null 2>&1; then
-  if ! (cd /tmp && sha256sum -c decky_client.py.sha256); then
-    echo "Checksum verification failed for Decky Loader client. File may be compromised." >&2
-    rm -f "${decky_client}" "${decky_client_checksum}"
-    exit 1
-  fi
-elif command -v shasum >/dev/null 2>&1; then
-  if ! (cd /tmp && shasum -a 256 -c decky_client.py.sha256); then
-    echo "Checksum verification failed for Decky Loader client. File may be compromised." >&2
-    rm -f "${decky_client}" "${decky_client_checksum}"
-    exit 1
-  fi
-else
-  echo "Warning: No checksum tool available (sha256sum or shasum). Skipping integrity verification." >&2
-  echo "This is a security risk. Consider installing sha256sum or shasum." >&2
+if ! (cd /tmp && sha256sum -c decky_client.py.sha256); then
+  echo "Checksum verification failed for Decky Loader client. File may be compromised." >&2
+  rm -f "${decky_client}" "${decky_client_checksum}"
+  exit 1
 fi
 
 # Install the plugin
