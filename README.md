@@ -22,7 +22,7 @@ A local mirror version of the Decky Installer for Steam Deck. This repository al
 The `decky_client.py` script uses subcommands for different operations:
 
 ```bash
-# Install a plugin (default operation)
+# Install a plugin
 python3 decky_client.py install [options]
 
 # Configure custom store URL
