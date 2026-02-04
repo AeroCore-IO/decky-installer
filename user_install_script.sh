@@ -34,13 +34,13 @@ if [ "$SKIP_DECKY_INSTALL" != true ]; then
   bash "${tmp_script}"
 fi
 
-# Download and run decky plugin installer helper (mirror-hosted).
-plugin_installer="/tmp/decky_client.py"
-if curl -fsSL "https://${DECKY_MIRROR_HOST}/AeroCore-IO/decky-installer/releases/latest/download/decky_client.py" -o "${plugin_installer}"; then
-  python3 "${plugin_installer}" install \
+# Download and run Decky Loader client (mirror-hosted).
+decky_client="/tmp/decky_client.py"
+if curl -fsSL "https://${DECKY_MIRROR_HOST}/AeroCore-IO/decky-installer/releases/latest/download/decky_client.py" -o "${decky_client}"; then
+  python3 "${decky_client}" install \
     --store-url "https://${DECKY_PLUGIN_MIRROR_HOST}/plugins" \
     --target-id "${DECKY_PLUGIN_TARGET_ID}"
 else
-  echo "Failed to download decky installer helper script." >&2
+  echo "Failed to download Decky Loader client script." >&2
   exit 1
 fi
