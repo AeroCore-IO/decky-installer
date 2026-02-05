@@ -111,28 +111,56 @@ class DeckyClient:
     async def recv(self) -> Optional[Dict[str, Any]]:
         """Receive and parse one WebSocket text frame."""
         try:
-            # Read first 2 bytes: Opcode and Length
-            head = await self.reader.readexactly(2)
-            # opcode = head[0] & 0x0F
-            has_mask = head[1] & 0x80
-            length = head[1] & 0x7F
+            while True:
+                # Read first 2 bytes: FIN/Opcode and Mask/Length
+                head = await self.reader.readexactly(2)
+                opcode = head[0] & 0x0F
+                has_mask = head[1] & 0x80
+                length = head[1] & 0x7F
 
-            if length == 126:
-                ext_len = await self.reader.readexactly(2)
-                length = struct.unpack("!H", ext_len)[0]
-            elif length == 127:
-                ext_len = await self.reader.readexactly(8)
-                length = struct.unpack("!Q", ext_len)[0]
+                if length == 126:
+                    ext_len = await self.reader.readexactly(2)
+                    length = struct.unpack("!H", ext_len)[0]
+                elif length == 127:
+                    ext_len = await self.reader.readexactly(8)
+                    length = struct.unpack("!Q", ext_len)[0]
 
-            if has_mask:
-                mask = await self.reader.readexactly(4)
+                if has_mask:
+                    mask = await self.reader.readexactly(4)
 
-            payload_raw = await self.reader.readexactly(length)
+                payload_raw = await self.reader.readexactly(length)
 
-            if has_mask:
-                payload_raw = bytes(b ^ mask[i % 4] for i, b in enumerate(payload_raw))
+                if has_mask:
+                    payload_raw = bytes(b ^ mask[i % 4] for i, b in enumerate(payload_raw))
 
-            return json.loads(payload_raw.decode())
+                # Handle control and non-text frames
+                if opcode == 0x8:  # Close
+                    return None
+                if opcode == 0x9:  # Ping -> Pong
+                    if self.writer:
+                        pong = bytearray([0x8A])
+                        pong_len = len(payload_raw)
+                        if pong_len < 126:
+                            pong.append(pong_len | 0x80)
+                        elif pong_len < 65536:
+                            pong.append(126 | 0x80)
+                            pong.extend(struct.pack("!H", pong_len))
+                        else:
+                            pong.append(127 | 0x80)
+                            pong.extend(struct.pack("!Q", pong_len))
+                        mask = os.urandom(4)
+                        pong.extend(mask)
+                        masked_payload = bytes(b ^ mask[i % 4] for i, b in enumerate(payload_raw))
+                        pong.extend(masked_payload)
+                        self.writer.write(pong)
+                        await self.writer.drain()
+                    continue
+                if opcode == 0xA:  # Pong
+                    continue
+                if opcode != 0x1:  # Not a text frame
+                    continue
+
+                return json.loads(payload_raw.decode())
         except (asyncio.IncompleteReadError, ConnectionError):
             return None
 
