@@ -225,7 +225,7 @@ async def run_installer(target_id: int, store_url: str) -> None:
             if msg is None:
                 log("Connection closed by server.")
                 if confirmed:
-                    log("Install was confirmed; assuming success despite disconnect.")
+                    log("Install was confirmed; treating disconnect as success.")
                     success = True
                 break
 
@@ -247,7 +247,7 @@ async def run_installer(target_id: int, store_url: str) -> None:
                 success = True
                 break
 
-            elif m_type == REPLY:
+            elif m_type == REPLY and msg.get('result'):
                 log(f"Server reply: {msg.get('result')}")
 
             elif m_type == ERROR:
