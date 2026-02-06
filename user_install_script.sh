@@ -31,7 +31,19 @@ if [ "$SKIP_DECKY_INSTALL" != true ]; then
     exit 1
   fi
 
+  # The official installer may exit with a non-zero code even when it succeeds.
+  # Do not abort our script here; verify via systemd instead.
+  set +e
   bash "${tmp_script}"
+  installer_status=$?
+  set -e
+
+  if systemctl is-active --quiet plugin_loader.service 2>/dev/null; then
+    echo "Decky Loader install completed (installer exit code: ${installer_status})."
+  else
+    echo "Decky Loader install did not complete successfully (installer exit code: ${installer_status})." >&2
+    exit 1
+  fi
 fi
 
 # Download and verify Decky Loader client (mirror-hosted).
