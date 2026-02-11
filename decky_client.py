@@ -305,7 +305,6 @@ async def configure_store_url(store_url: str) -> None:
         # First, set the store type to 2 (custom)
         log(f"Setting store type to custom (2)...")
         await client.send(CALL, "utilities/settings/set", ["store", 2])
-        
         msg = await client.recv()
         if msg is None:
             raise RuntimeError("Connection closed by server")
@@ -316,11 +315,8 @@ async def configure_store_url(store_url: str) -> None:
         
         log(f"Store type set to custom")
 
-        # Then, set the custom store URL
         log(f"Setting custom store URL: {store_url}")
         await client.send(CALL, "utilities/settings/set", ["store_url", store_url])
-
-        # Wait for reply
         msg = await client.recv()
         if msg is None:
             raise RuntimeError("Connection closed by server")
